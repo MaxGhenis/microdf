@@ -311,6 +311,51 @@ def test_additional_ops_return_microseries() -> None:
     assert isinstance(inv, mdf.MicroSeries)
 
 
+def test_where_preserves_microseries_metadata() -> None:
+    s = mdf.MicroSeries([0, 2, 3], weights=[10, 1, 1])
+    s.attrs["entity"] = "person"
+    s.entity = "person"
+
+    result = s.where(s > 1, 1)
+
+    assert isinstance(result, mdf.MicroSeries)
+    np.testing.assert_array_equal(result.weights.values, [10.0, 1.0, 1.0])
+    assert result.attrs["entity"] == "person"
+    assert result.entity == "person"
+    assert result.sum() == 15.0
+    assert result.mean() == 15 / 12
+
+
+def test_mask_preserves_microseries_metadata() -> None:
+    s = mdf.MicroSeries([0, 2, 3], weights=[10, 1, 1])
+    s.attrs["entity"] = "person"
+    s.entity = "person"
+
+    result = s.mask(s > 1, 10)
+
+    assert isinstance(result, mdf.MicroSeries)
+    np.testing.assert_array_equal(result.weights.values, [10.0, 1.0, 1.0])
+    assert result.attrs["entity"] == "person"
+    assert result.entity == "person"
+    assert result.sum() == 20.0
+    assert result.mean() == 20 / 12
+
+
+def test_clip_preserves_microseries_metadata() -> None:
+    s = mdf.MicroSeries([0, 2, 3], weights=[10, 1, 1])
+    s.attrs["entity"] = "person"
+    s.entity = "person"
+
+    result = s.clip(lower=1)
+
+    assert isinstance(result, mdf.MicroSeries)
+    np.testing.assert_array_equal(result.weights.values, [10.0, 1.0, 1.0])
+    assert result.attrs["entity"] == "person"
+    assert result.entity == "person"
+    assert result.sum() == 15.0
+    assert result.mean() == 15 / 12
+
+
 def test_reset_index_inplace() -> None:
     df = pd.DataFrame(
         {"A": [1, 2, 3, 4], "B": [5, 6, 7, 8]}, index=["a", "b", "c", "d"]

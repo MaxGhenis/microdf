@@ -625,6 +625,53 @@ class MicroSeries(pd.Series):
         res = MicroSeries(res, weights=self.weights.copy(deep))
         return res
 
+    def _with_metadata(self, result: pd.Series) -> "MicroSeries":
+        res = MicroSeries(result, weights=self.weights)
+        res.attrs = self.attrs.copy()
+        if "entity" in self.__dict__:
+            res.entity = self.__dict__["entity"]
+        return res
+
+    def where(
+        self,
+        cond,
+        other=np.nan,
+        *,
+        inplace: Optional[bool] = False,
+        axis: Optional[int] = None,
+        level=None,
+    ) -> "MicroSeries":
+        res = super().where(
+            cond,
+            other=other,
+            inplace=inplace,
+            axis=axis,
+            level=level,
+        )
+        if not inplace:
+            return self._with_metadata(res)
+        return self
+
+    def mask(
+        self,
+        cond,
+        other=np.nan,
+        *,
+        inplace: Optional[bool] = False,
+        axis: Optional[int] = None,
+        level=None,
+    ) -> "MicroSeries":
+        res = super().mask(
+            cond,
+            other=other,
+            inplace=inplace,
+            axis=axis,
+            level=level,
+        )
+        if not inplace:
+            return self._with_metadata(res)
+        return self
+
     def clip(
         self,
         lower: Optional[float] = None,
@@ -643,7 +690,7 @@ class MicroSeries(pd.Series):
             **kwargs,
         )
         if not inplace:
-            return MicroSeries(res, weights=self.weights)
+            return self._with_metadata(res)
         return self
 
     def round(self, decimals: Optional[int] = 0, *args, **kwargs) -> "MicroSeries":
